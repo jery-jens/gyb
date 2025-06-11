@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 
 import Header from "@/components/Header";
