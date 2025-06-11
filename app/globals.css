@@ -1,26 +1,37 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+    :root {
+      --background-primary: #141414;
+      --background-secondary: #1D1D1D;
+      --background-tertiary: #2F2F2F;
+      --title-primary: #FFFFFF;
+      --body-primary: #C0C0C0;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+      --border-primary: #2F2F2F;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+      --gradient-primary: radial-gradient(50% 50% at 50% 50%, #FF9D00 0%, #0A0099 100%);
+
+      --input-border: #2F2F2F;
+      --input-background: #2F2F2F;
+
+      --button-background: #FFFFFF;
+      --button-text: #141414;
+
+      --branding-primary: linear-gradient(90deg, #FF9D00 0%, #FFC972 100%);
+      --branding-secondary: linear-gradient(90deg, #1B0BFF 0%, #0B79FF 100%);
+
+      --brand-primary-transparent: linear-gradient(90deg, rgba(255, 157, 0, 0.08) 0%, rgba(255, 201, 114, 0.08) 100%);
+      --brand-secondary-transparent: linear-gradient(90deg, rgba(27, 11, 255, 0.08) 0%, rgba(11, 121, 255, 0.08) 100%);
+
+      --brand-error-transparent: linear-gradient(90deg, rgba(255, 0, 0, 0.08) 0%, rgba(255, 0, 0, 0.08) 100%);
+    }
+
+  body {
+    background: var(--background-primary);
+    color: var(--title-primary);
+    font-family: 'Inter', sans-serif;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
