@@ -8,7 +8,6 @@ interface ResourceLayoutProps {
     }>;
 }
 
-export default async function ResourceLayout({ children, params }: ResourceLayoutProps) {
-    const resolvedParams = await params;
+export default async function ResourceLayout({ children }: ResourceLayoutProps) {
     return <ClientLayout>{children}</ClientLayout>;
 } 

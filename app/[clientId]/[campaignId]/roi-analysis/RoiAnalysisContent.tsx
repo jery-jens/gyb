@@ -9,7 +9,7 @@ import PlatformRow from "@/components/PlatformRow";
 import { RiAlertFill, RiArrowRightLine, RiFlashlightFill } from "@remixicon/react";
 import SortDropdown from "@/components/ui/Dropdown";
 
-export function RoiAnalysisContent({ clientId, campaignId }: { clientId: string, campaignId: string }) {
+export function RoiAnalysisContent() {
     const valueCreationItems = [
         {
             label: "Value Creation",

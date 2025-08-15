@@ -1,6 +1,6 @@
 'use client';
 
-import { RiExpandUpDownLine, RiArrowDownSLine, RiTriangleLine, RiSquareLine, RiStarLine, RiPlugFill, RiSettingsFill, RiLogoutBoxLine, RiMoreFill } from "@remixicon/react";
+import { RiExpandUpDownLine, RiArrowDownSLine, RiTriangleLine, RiPlugFill, RiSettingsFill, RiMoreFill } from "@remixicon/react";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -25,7 +25,7 @@ export default function Sidebar() {
     const { clientId } = useParams();
 
     const [campaignDropdown, setCampaignDropdown] = useState(true);
-    const [currentClient, setCurrentClient] = useState(clientId);
+    const [currentClient] = useState(clientId);
     
     const pathname = usePathname();
 

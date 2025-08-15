@@ -207,7 +207,7 @@ const optimizationQueueTable = [
     },
 ]
 
-export default function CampaignOverviewContent({ clientId, campaignId }: { clientId: string, campaignId: string }) {
+export default function CampaignOverviewContent() {
     return (
         <>
             <Header title="Campaign Overview" />
@@ -258,7 +258,7 @@ export default function CampaignOverviewContent({ clientId, campaignId }: { clie
 
                     <PlatformBlockContent>
                         <div className="flex items-end justify-between gap-12">
-                            {traditionalVsGybDrivenValueCreation.map((item, index) => (
+                            {traditionalVsGybDrivenValueCreation.map((item) => (
                                 <div key={item.title} className="flex w-full flex-col justify-between items-center">
                                     <p className="text-sm font-medium tracking-tight opacity-70 mb-8">{item.title}</p>
                                     <div className="flex w-full items-end gap-2">

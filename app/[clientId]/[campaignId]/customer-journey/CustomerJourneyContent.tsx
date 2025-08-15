@@ -145,7 +145,7 @@ const valueCaptureTable = [
     },
 ]
 
-export function CustomerJourneyContent({ clientId, campaignId }: { clientId: string, campaignId: string }) {
+export function CustomerJourneyContent() {
     return (
         <>
             <Header title="Customer Journey" />

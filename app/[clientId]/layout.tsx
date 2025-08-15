@@ -5,8 +5,7 @@ interface UserLayoutProps {
     }>;
 }
 
-export default async function UserLayout({ children, params }: UserLayoutProps) {
-    const resolvedParams = await params;
+export default async function UserLayout({ children }: UserLayoutProps) {
     return (
         <>
             {children}

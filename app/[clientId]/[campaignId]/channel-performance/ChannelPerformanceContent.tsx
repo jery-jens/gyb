@@ -132,13 +132,13 @@ const optimizationQueueTable = [
     },
 ]
 
-export default function ChannelPerformanceContent({ clientId, campaignId }: { clientId: string, campaignId: string  }) {
+export default function ChannelPerformanceContent() {
     const [maxConversionVelocity, setMaxConversionVelocity] = useState(0);
 
     useEffect(() => {
         const maxValue = Math.max(...conversionVelocityItems.map(item => parseFloat(item.value)));
         setMaxConversionVelocity(maxValue);
-    }, [conversionVelocityItems]);
+    }, []);
 
     return (
         <>
@@ -170,7 +170,7 @@ export default function ChannelPerformanceContent({ clientId, campaignId }: { cl
                     </PlatformBlockLabel>
 
                     <div className="mt-6">
-                        {crossChannelAmplificationTableItems.map((item, i) => (
+                        {crossChannelAmplificationTableItems.map((item) => (
                             <div key={item.labelOne} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                 <p className="text-sm font-medium tracking-tight opacity-70 flex items-center gap-1">{item.labelOne} {<RiArrowRightLine className="w-4 h-4" />} {item.labelTwo}</p>
                                 <div className="flex items-center gap-2">
