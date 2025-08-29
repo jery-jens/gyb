@@ -1,4 +1,5 @@
 'use client';
+
 import Header from "@/components/Header";
 
 import PlatformRow from "@/components/PlatformRow";
@@ -8,6 +9,7 @@ import OptionsInput from "@/components/ui/OptionsInput";
 import PlatformBlockContent from "@/components/PlatformBlockContent";
 import { RiAlertFill, RiArrowRightLine, RiFlashlightFill } from "@remixicon/react";
 import { useState, useEffect } from "react";
+import { getChannelPerformance } from "@/hooks/getChannelPerformance";
 
 const channelOptions = [ 
     {
@@ -25,70 +27,6 @@ const channelOptions = [
     {
         label: "Social",
         value: "social",
-    },
-    
-];
-
-const channelPerformanceItems = [
-    {
-        label: "Revenue",
-        value: "$46,000",
-    },
-    {
-        label: "Marketing Spend",
-        value: "$10,000",
-    },
-    {
-        label: "Attribution-Optimized ROI",
-        value: "$10,000",
-    },
-    {
-        label: "Traditional Attribution ROI",
-        value: "$10,000",
-    },
-    {
-        label: "Total Revenue",
-        value: "$10,000",
-    },
-];
-
-const crossChannelAmplificationTableItems = [
-    {
-        labelOne: "Email",
-        labelTwo: "Paid Search",
-        value: "2.4x multiplier",
-        percentage: 28,
-    },
-    {
-        labelOne: "Email",
-        labelTwo: "Paid Search",
-        value: "2.4x multiplier",
-        percentage: 28,
-    }, 
-    {
-        labelOne: "Email",
-        labelTwo: "Paid Search",
-        value: "2.4x multiplier",
-        percentage: 28,
-    },
-];
-
-const conversionVelocityItems = [
-    {
-        label: "Email",
-        value: "3.2",
-    },
-    {
-        label: "Paid Search",
-        value: "6",
-    },
-    {
-        label: "Display",
-        value: "3.2",
-    },
-    {
-        label: "Social",
-        value: "3.2",
     },
     
 ];
@@ -132,13 +70,31 @@ const optimizationQueueTable = [
     },
 ]
 
-export default function ChannelPerformanceContent() {
+export default function ChannelPerformanceContent({ clientId }: { clientId: string }) {
     const [maxConversionVelocity, setMaxConversionVelocity] = useState(0);
+    const [conversionVelocityItems, setConversionVelocityItems] = useState<any[]>([]);
+    const [crossChannelAmplificationTableItems, setCrossChannelAmplificationTableItems] = useState<any[]>([]);
+    const [paidSearchItems, setPaidSearchItems] = useState<any>({});
+    const [optimizationQueueTableItems, setOptimizationQueueTableItems] = useState<any[]>([]);
+    const [optimizationSignalsItems, setOptimizationSignalsItems] = useState<any[]>([]);
 
     useEffect(() => {
-        const maxValue = Math.max(...conversionVelocityItems.map(item => parseFloat(item.value)));
-        setMaxConversionVelocity(maxValue);
+        const fetchChannelPerformance = async () => {
+            const channelPerformance = await getChannelPerformance(clientId);
+            setConversionVelocityItems(channelPerformance.conversionVelocity.metrics);
+            setCrossChannelAmplificationTableItems(channelPerformance.crossChannelAmplification.combinations);
+            setPaidSearchItems(channelPerformance.channelIntelligence.channels[0]);
+            setOptimizationQueueTableItems(channelPerformance.realTimeOptimizationSignals.sections[1].actions);
+            console.log(channelPerformance);
+            setOptimizationSignalsItems(channelPerformance.realTimeOptimizationSignals.sections[0].alerts);
+        }
+        fetchChannelPerformance();
     }, []);
+
+    useEffect(() => {
+        const maxValue = Math.max(...conversionVelocityItems.map((item: any) => parseFloat(item.value)));
+        setMaxConversionVelocity(maxValue);
+    }, [conversionVelocityItems]);
 
     return (
         <>
@@ -152,13 +108,26 @@ export default function ChannelPerformanceContent() {
                     </div>
 
                     <div className="flex gap-2">
-                        {channelPerformanceItems && channelPerformanceItems.map((item) => (
-                            <PlatformBlockContent key={item.label}>
-                                <p className="text-sm font-medium tracking-tight opacity-70 mb-4">{item.label}</p>
-
-                                <p className="text-3xl font-medium tracking-tight">{item.value}</p>
-                            </PlatformBlockContent> 
-                        ))}
+                        <PlatformBlockContent>
+                            <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Conversion</p>
+                            <p className="text-3xl font-medium tracking-tight">{paidSearchItems.conversion}</p>
+                        </PlatformBlockContent> 
+                        <PlatformBlockContent>
+                            <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Hidden Value</p>
+                            <p className="text-3xl font-medium tracking-tight">{paidSearchItems.hiddenValue}</p>
+                        </PlatformBlockContent> 
+                        <PlatformBlockContent>
+                            <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Revenue</p>
+                            <p className="text-3xl font-medium tracking-tight">{paidSearchItems.revenue}</p>
+                        </PlatformBlockContent> 
+                        <PlatformBlockContent>
+                            <p className="text-sm font-medium tracking-tight opacity-70 mb-4">ROI</p>
+                            <p className="text-3xl font-medium tracking-tight">{paidSearchItems.roi}</p>
+                        </PlatformBlockContent> 
+                        <PlatformBlockContent>
+                            <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Trend</p>
+                            <p className="text-3xl font-medium tracking-tight">{paidSearchItems.trend}</p>
+                        </PlatformBlockContent> 
                     </div>
                 </PlatformBlock>
             </PlatformRow>
@@ -170,12 +139,11 @@ export default function ChannelPerformanceContent() {
                     </PlatformBlockLabel>
 
                     <div className="mt-6">
-                        {crossChannelAmplificationTableItems.map((item) => (
-                            <div key={item.labelOne} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
-                                <p className="text-sm font-medium tracking-tight opacity-70 flex items-center gap-1">{item.labelOne} {<RiArrowRightLine className="w-4 h-4" />} {item.labelTwo}</p>
+                        {crossChannelAmplificationTableItems.map((item: any, i: number) => (
+                            <div key={i} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                                <p className="text-sm font-medium tracking-tight opacity-70 flex items-center gap-1">{item.channels[0]} {<RiArrowRightLine className="w-4 h-4" />} {item.channels[1]}</p>
                                 <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium tracking-tight">{item.value}</p>
-                                    <p className="text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none">+{item.percentage}%</p>
+                                    <p className="text-sm font-medium tracking-tight">{item.multiplier} multiplier</p>
                                 </div>
                             </div>
                         ))}
@@ -191,9 +159,9 @@ export default function ChannelPerformanceContent() {
                             <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Channels</p>
                             
                             <div className="flex flex-col gap-4">
-                                {conversionVelocityItems.map((item) => (
-                                    <div key={item.label} className="flex items-center w-full">
-                                        <p className="text-sm font-medium tracking-tight w-[120px]">{item.label}</p>
+                                {conversionVelocityItems.map((item: any, i: number) => (
+                                    <div key={item.channel + i} className="flex items-center w-full">
+                                        <p className="text-sm font-medium tracking-tight w-[120px]">{item.channel}</p>
                                         <div className="flex items-center gap-2 w-full">
                                             <div className={`h-[2px] rounded-lg bg-branding-primary`} style={{ width: `${((item.value as unknown as number) / maxConversionVelocity) * 100}%` }}></div>
                                             <p className="text-xs font-medium tracking-tight w-[80px]">{item.value} days</p>
@@ -213,13 +181,13 @@ export default function ChannelPerformanceContent() {
                     </PlatformBlockLabel>
 
                     <div className="flex gap-2 mt-6 flex-wrap">
-                        {optimizationSignals.map((item) => (
-                            <div className={`flex max-w-[300px] rounded-2xl p-4 flex-col gap-2 ${item.background}`} key={item.title}>
+                        {optimizationSignalsItems.map((item, i) => (
+                            <div className={`flex max-w-[300px] rounded-2xl p-4 flex-col gap-2 bg-brand-primary-transparent`} key={item.message + i}>
                                 <div className="flex items-center gap-2">
-                                    {item.icon}
-                                    <p className="text-sm font-medium tracking-tight">{item.title}</p>
+                                    <RiAlertFill className="w-5" />
+                                    <p className="text-sm font-medium tracking-tight">New optimization signal</p>
                                 </div>
-                                <p className="text-sm font-medium opacity-70 tracking-tight">{item.text}</p>
+                                <p className="text-sm font-medium opacity-70 tracking-tight">{item.channels} {item.message}</p>
                             </div>
                         ))}
                     </div>
@@ -232,15 +200,14 @@ export default function ChannelPerformanceContent() {
                     </PlatformBlockLabel>
 
                     <PlatformBlockContent>
-                        {optimizationQueueTable.map((item, i) => (
-                            <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                        {optimizationQueueTableItems.map((item, i) => (
+                            <div key={item.action} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{i + 1}.</p>
-                                    <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                                    <p className="text-sm font-medium tracking-tight opacity-70">{item.action}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-medium tracking-tight">{item.value}</p>
-                                    <p className="text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none">{item.percentage}</p>
                                 </div>
                             </div>
                         ))}

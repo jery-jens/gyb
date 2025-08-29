@@ -8,105 +8,9 @@ import PlatformBlockLabel from "@/components/PlatformBlockLabel";
 import PlatformRow from "@/components/PlatformRow";
 
 import Dropdown from "@/components/ui/Dropdown";
-import { RiAlertFill, RiErrorWarningFill, RiFlashlightFill } from "@remixicon/react";
-
-const campaignOverviewItems = [
-    {
-        title: "Status",
-        value: "Active",
-        label: "48/95",
-    },
-    {
-        title: "Total Spend",
-        value: "$843.290",
-    },
-    {
-        title: "Attributed Revenue",
-        value: "$4.2M",
-    },
-    {
-        title: "Intelligence-Driven ROI",
-        value: "4.98x",
-    },
-]
-
-const traditionalVsGybDrivenValueCreation = [
-    {
-        title: "CAC",
-        symbol: "$",
-        max: 1000,
-        bars: [
-            {
-                label: "traditional",
-                value: 892,
-            },
-            {
-                label: "gyb-driven",
-                value: 412,
-            }
-        ]
-    },
-    {
-        title: "Conv.",
-        symbol: "%",
-        max: 5,
-        bars: [
-            {
-                label: "traditional",
-                value: 2.1,
-            },
-            {
-                label: "gyb-driven",
-                value: 4.8,
-            }
-        ]
-    },
-    {
-        title: "ROI",
-        symbol: "x",
-        max: 5,
-        bars: [
-            {
-                label: "traditional",
-                value: 2.2,
-            },
-            {
-                label: "gyb-driven",
-                value: 4.98,
-            }
-        ]
-    },
-]
-
-const revenueContributionTable = [
-    {
-        label: "Level 1 (Surface)",
-        value: "$820K"
-    },
-    {
-        label: "Level 2 (Path)",
-        value: "$1.2M"
-    },
-    {
-        label: "Level 3 (Behavorial)",
-        value: "$1.5M"
-    },
-    {
-        label: "Level 4 (Predictive)",
-        value: "$3.5M"
-    }
-]
-
-const revenueContributionBlocks = [
-    {
-        label: "Hidden Value Captured",
-        value: "$2.2M"
-    },
-    {
-        label: "Optimization Potential",
-        value: "+$840K"
-    },
-]
+import { getCampaignOverview } from "@/hooks/getCampaignOverview";
+import { RiAlertFill, RiArrowRightLine, RiArrowRightSLine, RiErrorWarningFill, RiFlashlightFill } from "@remixicon/react";
+import { useEffect, useState } from "react";
 
 const emergingOpportunities = [
     {
@@ -144,70 +48,58 @@ const activationTriggers = [
     },
 ]
 
-const timeToConversionTable = [
-    {
-        label: "Before Intelligence",
-        value: "42 days"
-    },
-    {
-        label: "After Intelligence",
-        value: "28 days"
-    },
-    {
-        label: "Accelaration Impact",
-        value: "+920K"
-    }
-]
+export default function CampaignOverviewContent({ clientId, campaignId }: { clientId: string, campaignId: string }) {
+    const [campaignOverviewItems, setCampaignOverviewItems] = useState<any[]>([]);
+    const [valueCreationComparisonTraditional, setValueCreationComparisonTraditional] = useState<any>(null);
+    const [valueCreationComparisonGybDriven, setValueCreationComparisonGybDriven] = useState<any>(null);
+    const [revenueContributionTableItems, setRevenueContributionTableItems] = useState<any[]>([]);
+    const [revenueContributionBlocksItems, setRevenueContributionBlocksItems] = useState<any[]>([]);
+    const [velocityMetricsTimeToConversionItems, setVelocityMetricsTimeToConversionItems] = useState<any[]>([]);
+    const [velocityMetricsEngagementDepthItems, setVelocityMetricsEngagementDepthItems] = useState<any[]>([]);
+    const [activeAlertsItems, setActiveAlertsItems] = useState<any[]>([]);
+    const [optimizationQueueTableItems, setOptimizationQueueTableItems] = useState<any[]>([]);      
+    const [emergingOpportunitiesItems, setEmergingOpportunitiesItems] = useState<any[]>([]);
+    const [activationTriggersItems, setActivationTriggersItems] = useState<any[]>([]);
 
-const engagementDepthTable = [
-    {
-        label: "Avg. Touchpoints",
-        value: "8.4"
-    },
-    {
-        label: "Key Decision Point",
-        value: "Touch 4"
-    },
-    {   
-        label: "Drop-Off Risk Zone",
-        value: "Touch 6-7"
-    },
-]
+    // Calculate maximum values for proportional bar heights
+    const maxCac = Math.max(
+        valueCreationComparisonTraditional?.cac ?? 0,
+        valueCreationComparisonGybDriven?.cac ?? 0
+    );
+    const maxRoi = Math.max(
+        valueCreationComparisonTraditional?.roi ?? 0,
+        valueCreationComparisonGybDriven?.roi ?? 0
+    );
+    const maxConv = Math.max(
+        valueCreationComparisonTraditional?.conv ?? 0,
+        valueCreationComparisonGybDriven?.conv ?? 0
+    );
 
-const activeAlerts = [
-    {
-        icon: <RiErrorWarningFill className="w-5" />,
-        background: "bg-brand-error-transparent",
-        title: "Strong Demo Growth",
-        text: "GYB shows that Enterprise Demo Requests have increased by 32%, indicating strong interest from potential clients."
-    },
-    {
-        icon: <RiErrorWarningFill className="w-5" />,
-        background: "bg-brand-error-transparent",
-        title: "Strong Demo Growth",
-        text: "GYB shows that Enterprise Demo Requests have increased by 32%, indicating strong interest from potential clients."
-    },
-]
+    // Helper function to calculate bar height percentage
+    const getBarHeight = (value: number, maxValue: number) => {
+        if (maxValue === 0) return 0;
+        return Math.min((value / maxValue) * 100, 100);
+    };
 
-const optimizationQueueTable = [
-    {
-        label: "Active Journeys",
-        value: "+$52K",
-        percentage: "+28%",
-    },
-    {
-        label: "Email Sequence Timing",
-        value: "+$38K",
-        percentage: "+22%",
-    },
-    {
-        label: "Content Personalization",
-        value: "+$31K",
-        percentage: "+20%",
-    },
-]
+    useEffect(() => {
+        const fetchCampaignOverview = async () => {
+            const campaignOverview = await getCampaignOverview(clientId);
+            setCampaignOverviewItems(campaignOverview.campaignOverview.metrics);
+            setValueCreationComparisonTraditional(campaignOverview.valueCreationComparison.comparison[0].metrics);
+            setValueCreationComparisonGybDriven(campaignOverview.valueCreationComparison.comparison[1].metrics);
+            setRevenueContributionTableItems([campaignOverview.revenueContribution.levels[0], campaignOverview.revenueContribution.levels[1], campaignOverview.revenueContribution.levels[2], campaignOverview.revenueContribution.levels[3]]);
+            setRevenueContributionBlocksItems([campaignOverview.revenueContribution.levels[4], campaignOverview.revenueContribution.levels[5]]);
+            setVelocityMetricsTimeToConversionItems(campaignOverview.velocityMetrics.sections[0].metrics);
+            setVelocityMetricsEngagementDepthItems(campaignOverview.velocityMetrics.sections[1].metrics);
+            setActiveAlertsItems(campaignOverview.riskOptimizationRadar.sections[0].alerts);
+            setOptimizationQueueTableItems(campaignOverview.riskOptimizationRadar.sections[1].actions);
+            setEmergingOpportunitiesItems(campaignOverview.emergingSignals.sections[0].opportunities);
+            setActivationTriggersItems(campaignOverview.emergingSignals.sections[1].triggers);
+            console.log(campaignOverview);
+        }
+        fetchCampaignOverview();
+    }, []);
 
-export default function CampaignOverviewContent() {
     return (
         <>
             <Header title="Campaign Overview" />
@@ -234,15 +126,12 @@ export default function CampaignOverviewContent() {
                     ]} />
 
                     <div className="flex w-full gap-2">
-                        {campaignOverviewItems.map((item) => (
-                            <PlatformBlockContent key={item.title}>
-                                <p className="text-sm font-medium tracking-tight opacity-70 mb-4">{item.title}</p>
+                        {campaignOverviewItems.map((item, index) => (
+                            <PlatformBlockContent key={`${item.title}-${item.label}-${index}`}>
+                                <p className="text-sm font-medium tracking-tight opacity-70 mb-4">{item.label}</p>
 
                                 <div className="flex items-center justify-between gap-2">
                                     <p className="text-3xl font-medium tracking-tight">{item.value}</p>
-                                    {item.label && (
-                                        <p className="text-sm font-medium leading-none p-2 rounded-full tracking-tight border-[.5px] border-branding-primary">{item.label}</p>
-                                    )}
                                 </div>
                             </PlatformBlockContent>
                         ))}
@@ -258,19 +147,66 @@ export default function CampaignOverviewContent() {
 
                     <PlatformBlockContent>
                         <div className="flex items-end justify-between gap-12">
-                            {traditionalVsGybDrivenValueCreation.map((item) => (
-                                <div key={item.title} className="flex w-full flex-col justify-between items-center">
-                                    <p className="text-sm font-medium tracking-tight opacity-70 mb-8">{item.title}</p>
-                                    <div className="flex w-full items-end gap-2">
-                                        {item.bars.map((bar, i) => (
-                                            <div key={bar.label} className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
-                                                <div className={`w-full rounded-2xl ${i === 0 ? "bg-branding-primary" : "bg-branding-secondary"}`} style={{ height: `${bar.value / item.max * 100}%` }}></div>
-                                                <span className="text-center text-sm font-medium tracking-tight">{bar.value}{item.symbol}</span>
-                                            </div>
-                                        ))}
+                            <div className="flex w-full flex-col justify-between items-center">
+                                <p className="text-sm font-medium tracking-tight opacity-70 mb-8">CAC</p>
+                                <div className="flex w-full items-end gap-2">
+                                    <div className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
+                                        <div 
+                                            className={`w-full rounded-2xl bg-branding-primary`}
+                                            style={{ height: `${getBarHeight(valueCreationComparisonTraditional?.cac ?? 0, maxCac)}%` }}
+                                        ></div>
+                                        <span className="text-center text-sm font-medium tracking-tight">{valueCreationComparisonTraditional?.cac ?? "0"}$</span>
+                                    </div>
+
+                                    <div className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
+                                        <div 
+                                            className={`w-full rounded-2xl bg-branding-secondary`}
+                                            style={{ height: `${getBarHeight(valueCreationComparisonGybDriven?.cac ?? 0, maxCac)}%` }}
+                                        ></div>
+                                        <span className="text-center text-sm font-medium tracking-tight">{valueCreationComparisonGybDriven?.cac ?? "0"}$</span>
                                     </div>
                                 </div>
-                            ))}
+                            </div>
+                            <div className="flex w-full flex-col justify-between items-center">
+                                <p className="text-sm font-medium tracking-tight opacity-70 mb-8">ROI</p>
+                                <div className="flex w-full items-end gap-2">
+                                    <div className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
+                                        <div 
+                                            className={`w-full rounded-2xl bg-branding-primary`}
+                                            style={{ height: `${getBarHeight(valueCreationComparisonTraditional?.roi ?? 0, maxRoi)}%` }}
+                                        ></div>
+                                        <span className="text-center text-sm font-medium tracking-tight">{valueCreationComparisonTraditional?.roi ?? "0"}x</span>
+                                    </div>
+
+                                    <div className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
+                                        <div 
+                                            className={`w-full rounded-2xl bg-branding-secondary`}
+                                            style={{ height: `${getBarHeight(valueCreationComparisonGybDriven?.roi ?? 0, maxRoi)}%` }}
+                                        ></div>
+                                        <span className="text-center text-sm font-medium tracking-tight">{valueCreationComparisonGybDriven?.roi ?? "0"}x</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex w-full flex-col justify-between items-center">
+                                <p className="text-sm font-medium tracking-tight opacity-70 mb-8">Conv</p>
+                                <div className="flex w-full items-end gap-2">
+                                    <div className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
+                                        <div 
+                                            className={`w-full rounded-2xl bg-branding-primary`}
+                                            style={{ height: `${getBarHeight(valueCreationComparisonTraditional?.conv ?? 0, maxConv)}%` }}
+                                        ></div>
+                                        <span className="text-center text-sm font-medium tracking-tight">{valueCreationComparisonTraditional?.conv ?? "0"}%</span>
+                                    </div>
+
+                                    <div className="w-full h-[200px] gap-2 items-center justify-end flex flex-col">
+                                        <div 
+                                            className={`w-full rounded-2xl bg-branding-secondary`}
+                                            style={{ height: `${getBarHeight(valueCreationComparisonGybDriven?.conv ?? 0, maxConv)}%` }}
+                                        ></div>
+                                        <span className="text-center text-sm font-medium tracking-tight">{valueCreationComparisonGybDriven?.conv ?? "0"}%</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </PlatformBlockContent>
                     <div className="flex items-center gap-4 w-full justify-end mt-6">
@@ -292,17 +228,17 @@ export default function CampaignOverviewContent() {
                     </PlatformBlockLabel>
 
                     <PlatformBlockContent>
-                        {revenueContributionTable.map((item) => (
-                            <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
-                                <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                        {revenueContributionTableItems.map((item) => (
+                            <div key={item.level} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                                <p className="text-sm font-medium tracking-tight opacity-70">{item.level}</p>
                                 <p className="text-sm font-medium tracking-tight">{item.value}</p>
                             </div>
                         ))}
                     </PlatformBlockContent>
                     <div className="flex gap-2 mt-2">
-                        {revenueContributionBlocks.map((item) => (
-                            <PlatformBlockContent className="!mt-0" key={item.label}>
-                                <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                        {revenueContributionBlocksItems.map((item) => (
+                            <PlatformBlockContent className="!mt-0" key={item.level}>
+                                <p className="text-sm font-medium tracking-tight opacity-70">{item.level}</p>
                                 <p className="text-2xl mt-3 font-medium tracking-tight">{item.value}</p>
                             </PlatformBlockContent>
                         ))}
@@ -316,35 +252,48 @@ export default function CampaignOverviewContent() {
                         Pattern Detection
                     </PlatformBlockLabel>
 
-                    <div className="flex gap-2 mt-6">
-                        <div className="flex flex-col">
+                    <div className="flex gap-2 mt-6 w-full">
+                        <div className="flex flex-col w-full">
                             <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Emerging Opportunities</p>
 
                         <div className="flex flex-col gap-2">
-                            {emergingOpportunities.map((item) => (
-                                <div className={`flex rounded-2xl p-4 flex-col gap-2 ${item.background}`} key={item.title}>
+                            {emergingOpportunitiesItems.map((item) => (
+                                <div className={`flex rounded-2xl p-4 flex-col gap-2 bg-brand-secondary-transparent`} key={item.title}>
                                     <div className="flex items-center gap-2">
-                                        {item.icon}
+                                        <RiFlashlightFill className="w-5" />
                                         <p className="text-sm font-medium tracking-tight">{item.title}</p>
                                     </div>
-                                    <p className="text-sm font-medium opacity-70 tracking-tight">{item.text}</p>
+                                    <p className="text-sm font-medium opacity-70 tracking-tight">Possible impact: {item.change}</p>
                                 </div>
                             ))}
                             </div>
                         </div>
 
-                        <div className="flex flex-col">
+                        <div className="flex flex-col w-full">
                             <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Activation Triggers</p>
 
                         <div className="flex flex-col gap-2">
-                            {activationTriggers.map((item) => (
-                                <div className={`flex rounded-2xl p-4 flex-col gap-2 ${item.background}`} key={item.title}>
+                            {activationTriggersItems.map((item, index) => (
+                                <div className={`flex rounded-2xl p-4 flex-col gap-2 bg-brand-secondary-transparent`} key={`${item.title}-${index}`}>
                                     <div className="flex items-center gap-2">
-                                        {item.icon}
-                                        <p className="text-sm font-medium tracking-tight">{item.title}</p>
+                                        <RiFlashlightFill className="w-5" />
+                                            {
+                                                item.journey.map((journeyItem: any, journeyIndex: number) => (
+                                                    <div key={`${journeyItem}-${journeyIndex}`} className="flex items-center gap-2">
+                                                        <p className="text-sm font-medium tracking-tight">{journeyItem}</p>
+
+                                                        {
+                                                            journeyIndex !== item.journey.length - 1 && (
+                                                                <RiArrowRightLine className="w-5" />
+                                                            )
+                                                        }
+                                                    </div>
+                                                ))
+                                            }
                                     </div>
-                                    <p className="text-sm font-medium opacity-70 tracking-tight">{item.text}</p>
-                                </div>
+
+                                    <p className="text-sm font-medium tracking-tight opacity-70">Conversion rate: {item.metrics.convRate}.<br/>Current value: {item.metrics.value}</p>
+                                    </div>
                             ))}
                             </div>
                         </div>
@@ -359,7 +308,7 @@ export default function CampaignOverviewContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Time to Conversion</p>
                         <PlatformBlockContent className="!mt-0">
-                            {timeToConversionTable.map((item) => (
+                            {velocityMetricsTimeToConversionItems.map((item) => (
                                 <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
                                     <p className="text-sm font-medium tracking-tight">{item.value}</p>
@@ -371,7 +320,7 @@ export default function CampaignOverviewContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Engagement Depth</p>
                         <PlatformBlockContent className="!mt-0">
-                            {engagementDepthTable.map((item) => (
+                            {velocityMetricsEngagementDepthItems.map((item) => (
                                 <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
                                     <p className="text-sm font-medium tracking-tight">{item.value}</p>
@@ -389,13 +338,13 @@ export default function CampaignOverviewContent() {
                     </PlatformBlockLabel>
 
                     <div className="grid grid-cols-2 mt-6 flex-wrap gap-2">
-                        {activeAlerts.map((item) => (
-                            <div className={`flex w-full rounded-2xl p-4 flex-col gap-2 ${item.background}`} key={item.title}>
+                        {activeAlertsItems.map((item, index) => (
+                            <div className={`flex w-full rounded-2xl p-4 flex-col gap-2 bg-brand-error-transparent`} key={`${item.title}-${index}`}>
                                 <div className="flex items-center gap-2">
-                                    {item.icon}
+                                    <RiAlertFill className="w-5" />
                                     <p className="text-sm font-medium tracking-tight">{item.title}</p>
                                 </div>
-                                <p className="text-sm font-medium opacity-70 tracking-tight">{item.text}</p>
+                                <p className="text-sm font-medium opacity-70 tracking-tight">Fix: {item.details.fix}.<br/><span className="!opacity-100">Impact: {item.details.impact}</span></p>
                             </div>
                         ))}
                     </div>
@@ -406,15 +355,14 @@ export default function CampaignOverviewContent() {
                     </PlatformBlockLabel>
 
                     <PlatformBlockContent>
-                        {optimizationQueueTable.map((item, i) => (
-                            <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                        {optimizationQueueTableItems.map((item, i) => (
+                            <div key={item.action} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{i + 1}.</p>
-                                    <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                                    <p className="text-sm font-medium tracking-tight opacity-70">{item.action}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-medium tracking-tight">{item.value}</p>
-                                    <p className="text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none">{item.percentage}</p>
                                 </div>
                             </div>
                         ))}

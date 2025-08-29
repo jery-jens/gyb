@@ -1,6 +1,6 @@
-export const getDashboard = async (clientId: string) => {
+export const getCampaignOverview = async (clientId: string) => {
     const response = await fetch(
-        `http://localhost:3001/api/clients/${clientId}/dashboard`,
+        `http://localhost:3001/api/clients/${clientId}/campaign-overview`,
         {
             method: 'GET',
             headers: {

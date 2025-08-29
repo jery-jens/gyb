@@ -7,7 +7,48 @@ import PlatformBlockLabel from "@/components/PlatformBlockLabel";
 import PlatformBlockContent from "@/components/PlatformBlockContent";
 import { RiAlertFill, RiArrowRightLine, RiFlashlightFill } from "@remixicon/react";
 import SortDropdown from "@/components/ui/Dropdown";
+import { useEffect, useState } from "react";
+import { getCustomerJourney } from "@/hooks/getCustomerJourney";
 
+// TypeScript interfaces
+interface JourneyStep {
+    id: string;
+    steps: string[];
+    metrics: Metric[];
+}
+
+interface Metric {
+    label: string;
+    value: string | number;
+}
+
+interface OptimizationEngineSection {
+    metrics: Metric[];
+}
+
+interface RealTimeJourneySection {
+    metrics: Metric[];
+}
+
+interface RealTimeJourneyMonitor {
+    sections: RealTimeJourneySection[];
+}
+
+interface ImplementationSuggestionItem {
+    action: string;
+    value: string;
+}
+
+interface ImplementationSuggestionsSection {
+    items: ImplementationSuggestionItem[];
+}
+
+interface PatternIntelligenceItem {
+    icon: React.ReactNode;
+    background: string;
+    title: string;
+    text: string;
+}
 
 const journeySortOptions = [
     { label: "Revenue", value: "revenue" },
@@ -15,80 +56,7 @@ const journeySortOptions = [
     { label: "Journey Score", value: "journeyScore" },
 ]
 
-const journeyMatrixItems = [
-    {
-        steps: [
-            "Social",
-            "Webinar",
-            "Demo",
-            "Sales",
-        ],
-        revenue: "$1000",
-        conversionRate: "10%",
-        journeyScore: "90",
-        keyTrigger: "Product Demo Registration",
-    },
-    {
-        steps: [
-            "Social",
-            "Webinar",
-            "Demo",
-            "Sales",
-        ],
-        revenue: "$1000",
-        conversionRate: "10%",
-        journeyScore: "90",
-        keyTrigger: "Email Click-Through",
-    },
-    {
-        steps: [
-            "Social",
-            "Webinar",
-            "Demo",
-            "Sales",
-        ],
-        revenue: "$1000",
-        conversionRate: "10%",
-        journeyScore: "90",
-        keyTrigger: "Case Study Download",
-    }
-]
-
-const activeJourneysTable = [
-    {
-        label: "Total Active",
-        value: "10",
-    },
-    {
-        label: "High Value",
-        value: "10",
-    },
-    {
-        label: "At Risk",
-        value: "10",
-    },
-    {
-        label: "Accelerating",
-        value: "10",
-    },
-]
-
-const velocityMetricsTable = [
-    {
-        label: "Time to Conversion",
-        value: "10",
-    },
-    {
-        label: "Engagement Depth",
-        value: "10",
-    },
-    {
-        label: "Conversion Rate",
-        value: "10",
-    },
-]
-
-const patternIntelligence = [
+const patternIntelligence: PatternIntelligenceItem[] = [
     {
         icon: <RiFlashlightFill className="w-5" />,
         background: "bg-brand-secondary-transparent",
@@ -109,43 +77,36 @@ const patternIntelligence = [
     },
 ]
 
-const journeyAccelerationTable = [
-    {
-        label: "Before Intelligence",
-        value: "42 days",
-        percentage: 10
-    },
-    {
-        label: "After Intelligence",
-        value: "28 days",
-        percentage: 10
-    },
-    {
-        label: "Accelaration Impact",
-        value: "+920K",
-        percentage: 10
-    }
-]
+export function CustomerJourneyContent({ clientId, campaignId }: { clientId: string, campaignId: string }) {
+    const [journeyValueMatrix, setJourneyValueMatrix] = useState<JourneyStep[]>([]);
+    const [optimizationEngineJourneyAcceleration, setOptimizationEngineJourneyAcceleration] = useState<OptimizationEngineSection>({ metrics: [] });
+    const [optimizationEngineValueCreationDepth, setOptimizationEngineValueCreationDepth] = useState<OptimizationEngineSection>({ metrics: [] });
+    const [realTimeJourneyMonitor, setRealTimeJourneyMonitor] = useState<RealTimeJourneyMonitor>({ sections: [] });
+    const [implementationSuggestionsPriorityQueue, setImplementationSuggestionsPriorityQueue] = useState<ImplementationSuggestionsSection>({ items: [] });
+    const [implementationSuggestionsRiskMitigation, setImplementationSuggestionsRiskMitigation] = useState<ImplementationSuggestionsSection>({ items: [] });
 
-const valueCaptureTable = [
-    {
-        label: "Avg. Touchpoints",
-        value: "8.4",
-        percentage: -20
-    },
-    {
-        label: "Key Decision Point",
-        value: "Touch 4",
-        percentage: -20
-    },
-    {   
-        label: "Drop-Off Risk Zone",
-        value: "Touch 6-7",
-        percentage: -20
-    },
-]
-
-export function CustomerJourneyContent() {
+    useEffect(() => {
+        const fetchDashboard = async () => {
+            try {
+                const customerJourney = await getCustomerJourney(clientId);
+                console.log(customerJourney);
+                setJourneyValueMatrix(customerJourney?.journeyValueMatrix || []);
+                setOptimizationEngineJourneyAcceleration(customerJourney?.optimizationEngine?.sections?.[0] || { metrics: [] });
+                setOptimizationEngineValueCreationDepth(customerJourney?.optimizationEngine?.sections?.[1] || { metrics: [] });
+                setRealTimeJourneyMonitor(customerJourney?.realTimeJourneyMonitor || { sections: [] });
+                setImplementationSuggestionsPriorityQueue(customerJourney?.implementationSuggestions?.sections?.[0] || { items: [] });
+                setImplementationSuggestionsRiskMitigation(customerJourney?.implementationSuggestions?.sections?.[1] || { items: [] });
+            } catch (error) {
+                console.error('Failed to fetch customer journey:', error);
+                if (error instanceof Error) {
+                    console.error('Error details:', error.message);
+                }
+            }
+        };
+        
+        fetchDashboard();
+    }, [clientId, campaignId]);
+    
     return (
         <>
             <Header title="Customer Journey" />
@@ -161,16 +122,16 @@ export function CustomerJourneyContent() {
                     </div>
 
                     <div className="flex flex-col gap-2 mt-6">
-                        {journeyMatrixItems.map((journey, index) => (
-                            <PlatformBlockContent className="!m-0" key={journey.keyTrigger}>
+                        {(journeyValueMatrix || []).map((journey: JourneyStep, index: number) => (
+                            <PlatformBlockContent className="!m-0" key={journey?.id || index}>
                                 <div className="flex flex-wrap w-full items-center gap-2">
                                     <p className="text-sm font-medium tracking-tight">{index + 1}</p>
                                     <div className="flex items-center gap-1">
-                                        {journey.steps.map((step, stepIndex) => (
+                                        {(journey?.steps || []).map((step: string, stepIndex: number) => (
                                             <div key={step} className="flex items-center gap-1">
                                                 <p key={step} className="text-sm font-medium tracking-tight">{step}</p>
 
-                                                {stepIndex !== journey.steps.length - 1 && (
+                                                {stepIndex !== (journey?.steps || []).length - 1 && (
                                                     <RiArrowRightLine className="w-4" />
                                                 )}
                                             </div>
@@ -179,25 +140,12 @@ export function CustomerJourneyContent() {
                                 </div>
 
                                 <div className="flex flex-wrap gap-1 mt-6">
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Revenue</p>
-                                        <p>{journey.revenue}</p>
-                                    </div>
-
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Conversion Rate</p>
-                                        <p>{journey.conversionRate}</p>
-                                    </div>
-
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Journey Score</p>
-                                        <p>{journey.journeyScore}/100</p>
-                                    </div>
-
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Key Trigger</p>
-                                        <p className="w-max">{journey.keyTrigger}</p>
-                                    </div>
+                                    {(journey?.metrics || []).map((metric: Metric, metricIndex: number) => (
+                                        <div key={metricIndex} className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
+                                            <p className="opacity-50 w-max">{metric?.label}</p>
+                                            <p>{metric?.value}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </PlatformBlockContent>
                         ))}
@@ -212,7 +160,7 @@ export function CustomerJourneyContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Active Journeys</p>
                         <PlatformBlockContent className="!mt-0">
-                            {activeJourneysTable.map((item) => (
+                            {(realTimeJourneyMonitor?.sections?.[0]?.metrics || []).map((item: Metric) => (
                                 <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
                                     <p className="text-sm font-medium tracking-tight">{item.value}</p>
@@ -224,7 +172,7 @@ export function CustomerJourneyContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Velocity Metrics</p>
                         <PlatformBlockContent className="!mt-0">
-                            {velocityMetricsTable.map((item) => (
+                            {(realTimeJourneyMonitor?.sections?.[1]?.metrics || []).map((item: Metric) => (
                                 <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
                                     <p className="text-sm font-medium tracking-tight">{item.value}</p>
@@ -242,8 +190,8 @@ export function CustomerJourneyContent() {
                     </PlatformBlockLabel>
 
                     <div className="flex gap-2 mt-6 flex-wrap">
-                        {patternIntelligence.map((item) => (
-                            <div className={`flex max-w-[300px] rounded-2xl p-4 flex-col gap-2 ${item.background}`} key={item.title}>
+                        {patternIntelligence.map((item, index) => (
+                            <div className={`flex max-w-[300px] rounded-2xl p-4 flex-col gap-2 ${item.background}`} key={`${item.title}-${index}`}>
                                 <div className="flex items-center gap-2">
                                     {item.icon}
                                     <p className="text-sm font-medium tracking-tight">{item.title}</p>
@@ -264,26 +212,26 @@ export function CustomerJourneyContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Journey Acceleration</p>
                         <PlatformBlockContent className="!mt-0">
-                            {journeyAccelerationTable.map((item) => (
-                                <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
-                                    <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                            {(optimizationEngineJourneyAcceleration?.metrics || []).map((item: Metric, index: number) => (
+                                <div key={item?.label || index} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                                    <p className="text-sm font-medium tracking-tight opacity-70">{item?.label}</p>
                                     <div className="flex items-center gap-2">
-                                        <p className="text-sm font-medium tracking-tight">{item.value}</p>
-                                        <p className={`text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none ${item.percentage > 0 ? "border-green-500" : "border-red-500"}`}>{item.percentage > 0 ? "+" : ""}{item.percentage}%</p>                                    </div>
+                                        <p className="text-sm font-medium tracking-tight">{item?.value}</p>
+                                    </div>
                                 </div>
                             ))}
                         </PlatformBlockContent>
                     </div>
 
                     <div className="mt-6">
-                        <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Engagement Depth</p>
+                        <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Value Capture Delta</p>
                         <PlatformBlockContent className="!mt-0">
-                            {valueCaptureTable.map((item) => (
+                            {(optimizationEngineValueCreationDepth?.metrics || []).map((item: Metric) => (
                                 <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-medium tracking-tight">{item.value}</p>
-                                        <p className={`text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none ${item.percentage > 0 ? "border-green-500" : "border-red-500"}`}>{item.percentage > 0 ? "+" : ""}{item.percentage}%</p>                                    </div>                                
+                                    </div>                                
                                 </div>
                             ))}
                         </PlatformBlockContent>
@@ -298,15 +246,15 @@ export function CustomerJourneyContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Priority Queu</p>
                         <PlatformBlockContent className="!mt-0">
-                            {journeyAccelerationTable.map((item, i) => (
-                                <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                            {(implementationSuggestionsPriorityQueue?.items || []).map((item: ImplementationSuggestionItem, index: number) => (
+                                <div key={item.action} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <p className="text-sm font-medium tracking-tight opacity-70">{i + 1}</p>
-                                        <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                                        <p className="text-sm font-medium tracking-tight opacity-70">{index + 1}</p>
+                                        <p className="text-sm font-medium tracking-tight opacity-70">{item.action}</p>
                                     </div>
                                         
                                     
-                                    <p className={`text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none ${item.percentage > 0 ? "border-green-500" : "border-red-500"}`}>{item.percentage > 0 ? "+" : ""}{item.percentage}%</p>
+                                    <p className={`text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none ${item.value.includes("+") ? "border-green-500" : "border-red-500"}`}>{item.value}</p>
                                 </div>
                             ))}
                         </PlatformBlockContent>
@@ -315,15 +263,14 @@ export function CustomerJourneyContent() {
                     <div className="mt-6">
                         <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Risk Mitigation</p>
                         <PlatformBlockContent className="!mt-0">
-                            {valueCaptureTable.map((item, i) => (
-                                <div key={item.label} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
+                            {(implementationSuggestionsRiskMitigation?.items || []).map((item: ImplementationSuggestionItem, index: number) => (
+                                <div key={item.action} className="flex py-4 border-b-[.5px] border-white/10 last:border-none first:pt-0 last:pb-0 items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <p className="text-sm font-medium tracking-tight opacity-70">{i + 1}</p>
-                                        <p className="text-sm font-medium tracking-tight opacity-70">{item.label}</p>
+                                        <p className="text-sm font-medium tracking-tight opacity-70">{index + 1}</p>
+                                        <p className="text-sm font-medium tracking-tight opacity-70">{item.action}</p>
                                     </div>
-                                        
-                                    <p className={`text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none ${item.percentage > 0 ? "border-green-500" : "border-red-500"}`}>{item.percentage > 0 ? "+" : ""}{item.percentage}%</p>
-                                                                    </div>
+                                    <p className={`text-sm font-medium tracking-tight border-[.5px] border-green-500 rounded-full p-2 leading-none ${item.value.includes("+") ? "border-green-500" : "border-red-500"}`}>{item.value}</p>
+                                </div>
                             ))}
                         </PlatformBlockContent>
                     </div>

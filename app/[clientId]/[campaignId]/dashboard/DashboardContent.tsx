@@ -17,52 +17,6 @@ interface DashboardContentProps {
     clientId: string;
     campaignId: string;
 }
-
-const valueMonitorItems = [
-    {
-        title: "Revenue generated",
-        value: "$1000",
-        percentage: 10,
-    },
-    {
-        title: "Marketing spend",
-        value: "$1000",
-        percentage: -10,
-    },
-    {
-        title: "Attribution-Optimized ROI",
-        value: "$1000",
-        percentage: 80,
-    },
-    {
-        title: "Traditional Attribution ROI",
-        value: "$1000",
-        percentage: 80,
-    }
-];
-
-const channelImpactItems = [
-    {
-        title: "Search",
-        attribution: 42,
-        roi: 3.2,
-    },
-    {
-        title: "Social",
-        attribution: 32,
-        roi: 4.2,
-    },
-    {
-        title: "Email",
-        attribution: 8,
-        roi: 2.5,
-    },
-    {
-        title: "Direct",
-        attribution: 60,
-        roi: 5,
-    },
-]
  
 const attributionFlowOptions = [
     {
@@ -90,70 +44,31 @@ const journeySortOptions = [
     },        
 ]
 
-const topPerformingJourneys = [
-    {
-        steps: [
-            "Social",
-            "Webinar",
-            "Demo",
-            "Sales",
-        ],
-        revenue: "$1000",
-        conversionRate: "10%",
-        journeyScore: "90",
-        keyTrigger: "Product Demo Registration",
-    },
-    {
-        steps: [
-            "Social",
-            "Webinar",
-            "Demo",
-            "Sales",
-        ],
-        revenue: "$1000",
-        conversionRate: "10%",
-        journeyScore: "90",
-        keyTrigger: "Email Click-Through",
-    },
-    {
-        steps: [
-            "Social",
-            "Webinar",
-            "Demo",
-            "Sales",
-        ],
-        revenue: "$1000",
-        conversionRate: "10%",
-        journeyScore: "90",
-        keyTrigger: "Case Study Download",
-    }
-]
-
-const journeyOptimizationSignals = [
-    {
-        title: "Optimization Alert",
-        type: "alert",
-        message: <p className="text-sm text-white/70">42% drop after demo registration. <span className="text-white">Potential $3.2M revenue loss.</span> GYB suggests <span className="text-white">sending a success story email.</span></p>,
-    },
-    {
-        title: "Journey Acceleration",
-        type: "default",
-        message: <p className="text-sm text-white/70">Reduce cycle from <span className="text-white">12 to 8 days</span> for <span className="text-white">+$840K/month</span> impact.</p>,
-    },
-    
-]
-
 export function DashboardContent({ clientId, campaignId }: DashboardContentProps) {
     const [ maxImpactRoi, setMaxImpactRoi ] = useState(0);
     const [ maxImpactAttribution, setMaxImpactAttribution ] = useState(0);
 
+    const [valueMonitorItems, setValueMonitorItems] = useState([]);
+    const [channelImpactItems, setChannelImpactItems] = useState([]);
+    const [topJourneys, setTopJourneys] = useState([]);
+    const [journeyOptimizationSignals, setJourneyOptimizationSignals] = useState([]);
+    const [realTimeJourneyTracking, setRealTimeJourneyTracking] = useState([]);
+
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                const dashboard = await getDashboard(clientId, campaignId);
+                const dashboard = await getDashboard(clientId);
                 console.log(dashboard);
+                setValueMonitorItems(dashboard.valueMonitor);
+                setChannelImpactItems(dashboard.channelImpact.data);
+                setTopJourneys(dashboard.topJourneys);
+                setJourneyOptimizationSignals(dashboard.journeyInsight);
+                setRealTimeJourneyTracking(dashboard.realtimeJourneyTrackingSummary);
             } catch (error) {
                 console.error('Failed to fetch dashboard:', error);
+                if (error instanceof Error) {
+                    console.error('Error details:', error.message);
+                }
             }
         };
         
@@ -162,8 +77,8 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
 
 
     const sizeImpactJourney = () => {
-        const maxRoi = Math.max(...channelImpactItems.map(item => item.roi));
-        const maxAttribution = Math.max(...channelImpactItems.map(item => item.attribution));
+        const maxRoi = Math.max(...channelImpactItems.map((item: any) => item.ChannelImpact.ROI));
+        const maxAttribution = Math.max(...channelImpactItems.map((item: any) => item.ChannelImpact.Attribution));
 
         setMaxImpactRoi(maxRoi);
         setMaxImpactAttribution(maxAttribution);
@@ -184,13 +99,13 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
                     </PlatformBlockLabel>
 
                     <div className="flex w-full gap-2">
-                        {valueMonitorItems.map((item) => (
-                            <PlatformBlockContent key={item.title}>
-                                <p className="text-sm font-medium tracking-tight opacity-70 mb-4">{item.title}</p>
+                        {valueMonitorItems.map((item: any) => (
+                            <PlatformBlockContent key={item.data.label}>
+                                <p className="text-sm font-medium tracking-tight opacity-70 mb-4">{item.data.label}</p>
 
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-3xl font-medium tracking-tight">{item.value}</p>
-                                    <p className={`text-sm font-medium leading-none p-2 rounded-full tracking-tight border-[.5px] ${item.percentage > 0 ? 'border-green-500' : 'border-red-500'}`}>{item.percentage}%</p>
+                                    <p className="text-3xl font-medium tracking-tight">{item.data.value}</p>
+                                    <p className={`text-sm font-medium leading-none p-2 rounded-full tracking-tight border-[.5px] ${item.data.changeValue > 0 ? 'border-green-500' : 'border-red-500'}`}>{item.data.changeValue}%</p>
                                 </div>
                             </PlatformBlockContent>
                         ))}
@@ -223,18 +138,18 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
                             <p className="text-sm font-medium tracking-tight opacity-70 mb-4">Channels</p>
                             
                             <div className="flex flex-col gap-4">
-                                {channelImpactItems.map((item) => (
-                                    <div key={item.title} className="flex items-center w-full">
-                                        <p className="text-sm font-medium tracking-tight w-[80px]">{item.title}</p>
+                                {channelImpactItems.map((item: any) => (
+                                    <div key={item.ChannelImpact.Channel} className="flex items-center w-full">
+                                        <p className="text-sm font-medium tracking-tight w-[80px]">{item.ChannelImpact.Channel}</p>
 
                                         <div className="flex flex-col gap-1 w-full">
                                             <div className="flex items-center gap-2 w-full">
-                                                <div className={`h-[2px] rounded-lg bg-branding-primary`} style={{ width: `${item.attribution / maxImpactAttribution * 100}%` }}></div>
-                                            <p className="text-xs font-medium tracking-tight">{item.attribution}%</p>
+                                                <div className={`h-[2px] rounded-lg bg-branding-primary`} style={{ width: `${item.ChannelImpact.Attribution / maxImpactAttribution * 100}%` }}></div>
+                                            <p className="text-xs font-medium tracking-tight">{item.ChannelImpact.Attribution}%</p>
                                         </div>
                                         <div className="flex items-center gap-2 w-full">
-                                            <div className={`h-[2px] rounded-lg bg-branding-secondary`} style={{ width: `${item.roi / maxImpactRoi * 100}%` }}></div>
-                                                <p className="text-xs font-medium tracking-tight">{item.roi}x</p>
+                                            <div className={`h-[2px] rounded-lg bg-branding-secondary`} style={{ width: `${item.ChannelImpact.ROI / maxImpactRoi * 100}%` }}></div>
+                                                <p className="text-xs font-medium tracking-tight">{item.ChannelImpact.ROI}x</p>
                                             </div>
                                         </div>
                                     </div>
@@ -268,12 +183,12 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
                     </div>
 
                     <div className="flex flex-col gap-2 mt-6">
-                        {topPerformingJourneys.map((journey, index) => (
-                            <PlatformBlockContent className="!m-0" key={journey.keyTrigger}>
+                        {topJourneys.map((journey: any, index: any) => (
+                            <PlatformBlockContent className="!m-0" key={journey.id}>
                                 <div className="flex flex-wrap w-full items-center gap-2">
                                     <p className="text-sm font-medium tracking-tight">{index + 1}</p>
                                     <div className="flex items-center gap-1">
-                                        {journey.steps.map((step, stepIndex) => (
+                                        {journey.steps.map((step: any, stepIndex: any) => (
                                             <div key={step} className="flex items-center gap-1">
                                                 <p key={step} className="text-sm font-medium tracking-tight">{step}</p>
 
@@ -285,26 +200,14 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
                                     </div>
                                 </div>
 
+
                                 <div className="flex flex-wrap gap-1 mt-6">
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Revenue</p>
-                                        <p>{journey.revenue}</p>
-                                    </div>
-
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Conversion Rate</p>
-                                        <p>{journey.conversionRate}</p>
-                                    </div>
-
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Journey Score</p>
-                                        <p>{journey.journeyScore}/100</p>
-                                    </div>
-
-                                    <div className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg font-medium tracking-tight text-sm p-3">
-                                        <p className="opacity-50 w-max">Key Trigger</p>
-                                        <p className="w-max">{journey.keyTrigger}</p>
-                                    </div>
+                                    {journey.metrics.map((metric: any) => (
+                                        <div key={metric.label} className="border-[.5px] w-fit bg-white/10 flex items-center gap-1 border-white/10 rounded-lg capitalize font-medium tracking-tight text-sm p-3">
+                                            <p className="opacity-50 w-max">{metric.label}</p>
+                                            <p>{metric.value}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </PlatformBlockContent>
                         ))}
@@ -319,18 +222,16 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
                             </PlatformBlockLabel>
 
                             <div className="flex flex-col gap-2 mt-6">
-                                {journeyOptimizationSignals.map((signal) => (
-                                    <PlatformBlockContent key={signal.title} className={`bg-transparent !mt-0 ${signal.type === "alert" ? "bg-brand-primary-transparent" : "bg-brand-secondary-transparent"}`}>
+                                {journeyOptimizationSignals.map((signal: any) => (
+                                    <PlatformBlockContent key={signal.title} className={`bg-transparent !mt-0 bg-brand-secondary-transparent`}>
                                         <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-2">
-                                            {signal.type === "alert" ? (
-                                                <RiErrorWarningFill className="w-5" />
-                                            ) : (
+                                            <div className="flex items-center gap-2">
                                                 <RiFlashlightFill className="w-5" />
-                                            )}
                                             <p className="text-sm font-medium tracking-tight">{signal.title}</p>
                                         </div>
-                                        {signal.message}
+                                        <p className="text-sm font-medium tracking-tight">
+                                            {signal.insights}
+                                        </p>
                                     </div>
                                     </PlatformBlockContent>
                                 ))}
@@ -343,65 +244,38 @@ export function DashboardContent({ clientId, campaignId }: DashboardContentProps
                         </PlatformBlockLabel>
 
                         <div className="mt-6">
-                            <div className="border-b-[.5px] border-border-primary py-4 flex items-center justify-between h-16">
-                                <div className="flex items-center gap-2 opacity-70">
-                                    <RiCheckboxCircleFill className="w-5" />
-                                    <p className="text-sm font-medium tracking-tight">Active Journeys</p>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <p className="text-sm font-medium tracking-tight">1.249</p>
-                                </div>
-                            </div>
-
-                            <div className="border-b-[.5px] border-border-primary py-4 flex items-center justify-between h-16">
-                                <div className="flex items-center gap-2 opacity-70">
-                                    <RiArrowUpLine className="w-5" />
-                                    <p className="text-sm font-medium tracking-tight">Trending Ups</p>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1">
-                                        <p className="text-sm font-medium tracking-tight">Social</p>
-                                        <RiArrowRightLine className="w-4" />
-                                        <p className="text-sm font-medium tracking-tight">Social</p>
+                            {realTimeJourneyTracking.map((item: any) => (   
+                                <div key={item.label} className="border-b-[.5px] last:border-b-0 border-border-primary py-4 flex items-center justify-between h-16">
+                                    <div className="flex items-center gap-2 opacity-70">
+                                        <p className="text-sm font-medium tracking-tight">{item.label}</p>
                                     </div>
 
-                                    <p className="text-sm font-medium leading-none p-2 rounded-full tracking-tight border-[.5px] border-green-500">+28%</p>
-                                </div>
-                            </div>
+                                    {
+                                        item.type === "metric" ? (
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-sm font-medium tracking-tight">{item.value}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-1">
+                                                    {item.channels.map((channel: any) => (
+                                                        <div key={channel} className="flex items-center gap-1">
+                                                            <p className="text-sm font-medium tracking-tight">{channel}</p>
+                                                            {item.channels.length > 1 && channel !== item.channels[item.channels.length - 1] && (
+                                                                <RiArrowRightLine className="w-4" />
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
 
-                            <div className="border-b-[.5px] border-border-primary py-4 flex items-center justify-between h-16">
-                                <div className="flex items-center gap-2 opacity-70">
-                                    <RiArrowDownLine className="w-5" />
-                                    <p className="text-sm font-medium tracking-tight">At Risk</p>
+                                                {item.change && (
+                                                    <p className={`text-sm font-medium leading-none p-2 rounded-full tracking-tight border-[.5px] ${item.change > 0 ? 'border-green-500' : 'border-red-500'}`}>{item.change}%</p>
+                                                )}
+                                            </div>
+                                        )
+                                    }
                                 </div>
-
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1">
-                                        <p className="text-sm font-medium tracking-tight">Search</p>
-                                        <RiArrowRightLine className="w-4" />
-                                        <p className="text-sm font-medium tracking-tight">Email Path</p>
-                                    </div>
-
-                                    <p className="text-sm font-medium leading-none p-2 rounded-full tracking-tight border-[.5px] border-red-500">-12%</p>
-                                </div>
-                            </div>
-
-                            <div className="py-4 flex items-center justify-between h-16">
-                                <div className="flex items-center gap-2 opacity-70">
-                                    <RiSparkling2Fill className="w-5" />
-                                    <p className="text-sm font-medium tracking-tight">New Pattern</p>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1">
-                                        <p className="text-sm font-medium tracking-tight">LinkedIn</p>
-                                        <RiArrowRightLine className="w-4" />
-                                        <p className="text-sm font-medium tracking-tight">Webinar Emergence</p>
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </PlatformBlock>
                 </div>
