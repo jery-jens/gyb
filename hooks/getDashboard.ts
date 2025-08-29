@@ -1,6 +1,6 @@
 export const getDashboard = async (clientId: string) => {
     const response = await fetch(
-        `http://localhost:3001/api/clients/${clientId}/dashboard`,
+        `https://gyb-be.onrender.com/api/clients/${clientId}/dashboard`,
         {
             method: 'GET',
             headers: {

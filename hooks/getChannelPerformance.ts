@@ -1,6 +1,6 @@
 export const getChannelPerformance = async (clientId: string) => {
     const response = await fetch(
-        `http://localhost:3001/api/clients/${clientId}/channel-performance`,
+        `https://gyb-be.onrender.com/api/clients/${clientId}/channel-performance`,
         {
             method: 'GET',
             headers: {

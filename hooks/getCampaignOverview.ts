@@ -1,6 +1,6 @@
 export const getCampaignOverview = async (clientId: string) => {
     const response = await fetch(
-        `http://localhost:3001/api/clients/${clientId}/campaign-overview`,
+        `https://gyb-be.onrender.com/api/clients/${clientId}/campaign-overview`,
         {
             method: 'GET',
             headers: {

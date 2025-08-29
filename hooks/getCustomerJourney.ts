@@ -1,6 +1,6 @@
 export const getCustomerJourney = async (clientId: string) => {
     const response = await fetch(
-        `http://localhost:3001/api/clients/${clientId}/customer-journey`,
+        `https://gyb-be.onrender.com/api/clients/${clientId}/customer-journey`,
         {
             method: 'GET',
             headers: {
